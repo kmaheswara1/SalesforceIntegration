@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="6dc391fe-6133-41b5-9652-f023e580bd02" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="8749cdcb-5492-42ce-80e3-36ecd98c456b" >
+		<salesforce:basic-connection username="kmaheswara@techwave.net" password="Password!1" securityToken="8EOWoSszZ8ddIB50NK0YzbHKl" />
+	</salesforce:sfdc-config>
+	<flow name="salesforceFlow" doc:id="05afc78b-8412-4706-91f5-8d34ffe0b99c" >
+		<http:listener doc:name="Listener" doc:id="39685e6a-41ef-4af3-9225-cb9a8804b907" config-ref="HTTP_Listener_config" path="/salesforce"/>
+		<ee:transform doc:name="Transform Message" doc:id="ec935509-5ce1-4c50-a955-e2a14c2bbc8f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name:"Test15",
+	AccountNumber:"01234567",
+	Phone:"012345678",
+	BillingCity:"India"
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Account" doc:name="Create" doc:id="2e376f22-f1cf-4cd0-8f36-46101753e31a" config-ref="Salesforce_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="44516953-ce3e-4cd6-b222-9cdd7d05f691" message="#[payload]"/>
+	</flow>
+	<flow name="salesforceFlow1" doc:id="c42e94c0-f1ae-4d58-8664-33a8d4283e13" >
+		<http:listener doc:name="Listener" doc:id="0c84c6de-e3d3-4dff-b9a9-1370b4d1d568" config-ref="HTTP_Listener_config" path="/channel"/>
+		<salesforce:publish-streaming-channel doc:name="Publish streaming channel" doc:id="423ca01b-fb9f-46b0-b63f-0eabf93ff180" config-ref="Salesforce_Config" channelName="/u/Techwaveinc" description="Techwaveinc"/>
+		<logger level="INFO" doc:name="Logger" doc:id="8d8a4e11-c3d7-4730-8dee-c5c1b2366db4" message="#[payload]"/>
+	</flow>
+	<flow name="salesforceFlow2" doc:id="bc2590a3-a2cc-4b88-bf9a-94135cb7ffd2" >
+		<http:listener doc:name="Listener" doc:id="4ff72b44-6c5a-47b8-baf5-3bef245f5eaf" config-ref="HTTP_Listener_config" path="/Squery"/>
+		<salesforce:query doc:name="Query" doc:id="254bac0e-fb91-4031-898e-7aed8d17d219" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name,AccountNumber,Phone,BillingCity FROM Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="9c5b379d-70f5-4423-a47c-0bdafe8f4c5b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="634e6721-e3e7-4feb-88ba-728c5177ff33" message="#[payload]"/>
+	</flow>
+	<flow name="salesforceFlow3" doc:id="ddea7795-23ea-46b1-b3fb-138af755a70b" >
+		<http:listener doc:name="Listener" doc:id="475e637e-d8a3-4b2d-b047-e2c5984082d5" config-ref="HTTP_Listener_config" path="/Supdate"/>
+		<set-variable value="1234567" doc:name="accountNumber" doc:id="dd27b32d-353a-45a0-ac3f-094e05157f1a" variableName="accountNumber"/>
+		<salesforce:query doc:name="Query" doc:id="136f1bf5-cf48-4433-ad90-94825ebca358" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT AccountNumber,Id,Name FROM Account Where AccountNumber=':accountNumber']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"accountNumber" : vars.accountNumber
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="Logger" doc:id="19dacc26-22e6-4e6d-8511-8bcf207159d6" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="baef76b9-a52a-447a-aecc-2fdf1078c70d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{	
+	Id:payload[0].Id,
+	AccountNumber:vars.accountNumber,
+	Phone:"76543210",
+	BillingCity:"London"	
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update type="Account" doc:name="Update" doc:id="c344bb87-bc2f-4269-8487-b6e78a620593" config-ref="Salesforce_Config">
+		</salesforce:update>
+		<logger level="INFO" doc:name="Logger" doc:id="9e6174d2-3904-44bf-8dc7-2f5360977e79" message="payload"/>
+	</flow>
+</mule>
