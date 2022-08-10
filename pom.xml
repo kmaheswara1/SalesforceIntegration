@@ -19,6 +19,7 @@
 
 	<build>
 		<plugins>
+		<!-- START : ADD-Plugins -->
 		 <plugin>
     		<groupId>org.apache.maven.plugins</groupId>
     		<artifactId>maven-install-plugin</artifactId>
@@ -39,11 +40,13 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.0.0</version>
 			</plugin>
+		<!-- END : ADD-Plugins -->
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
+		<!-- START : ADD-Config/CloudHubDeployment -->
 				<configuration>
         	<cloudHubDeployment>
             	<uri>https://anypoint.mulesoft.com</uri>
@@ -58,6 +61,7 @@
             	<objectStoreV2>true</objectStoreV2>
         	</cloudHubDeployment>
     	</configuration>
+    	<!-- END : ADD-Config/CloudHubDeployment -->
 			</plugin>
 		</plugins>
 	</build>
@@ -108,9 +112,11 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
+		<!-- ADD - pluginRepository - START -->
 		<pluginRepository>
     		<id>mule-public</id>
     		<url>https://repository.mulesoft.org/nexus/content/repositories/releases</url>
   		</pluginRepository>	
+  		<!-- ADD - pluginRepository - END -->
 	</pluginRepositories>
 </project>

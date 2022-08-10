@@ -52,7 +52,7 @@ payload]]></ee:set-payload>
 	</flow>
 	<flow name="salesforceFlow3" doc:id="ddea7795-23ea-46b1-b3fb-138af755a70b" >
 		<http:listener doc:name="Listener" doc:id="475e637e-d8a3-4b2d-b047-e2c5984082d5" config-ref="HTTP_Listener_config" path="/Supdate"/>
-		<set-variable value="1234567" doc:name="accountNumber" doc:id="dd27b32d-353a-45a0-ac3f-094e05157f1a" variableName="accountNumber"/>
+		<set-variable value="1234567" doc:name="AccountNumber" doc:id="dd27b32d-353a-45a0-ac3f-094e05157f1a" variableName="accountNumber"/>
 		<salesforce:query doc:name="Query" doc:id="136f1bf5-cf48-4433-ad90-94825ebca358" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT AccountNumber,Id,Name FROM Account Where AccountNumber=':accountNumber']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
@@ -71,7 +71,7 @@ output application/java
 	Id:payload[0].Id,
 	AccountNumber:vars.accountNumber,
 	Phone:"76543210",
-	BillingCity:"London"	
+	BillingCity:"London"
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
